@@ -1,0 +1,300 @@
+    #include <iostream>
+    #include <vector>
+
+    class Node
+    {
+    public:
+        int item;
+        Node* next;
+        Node(int item)
+        {
+            this->item = item;
+            this->next = nullptr;
+        }
+    };
+
+    class List
+    {
+        typedef Node* link;
+
+        link head;
+        link tail;
+
+    public:
+        List()
+        {
+            head = nullptr;
+            tail = nullptr;
+        }
+
+        ~List()
+        {
+            clear();
+        }
+
+        void clear()
+        {
+            if (head == nullptr) return;
+
+            link current = head;
+            while (current != tail) {
+                link temp = current;
+                current = current->next;
+                delete temp;
+            }
+            delete tail;
+            head = nullptr;
+            tail = nullptr;
+        }
+
+        void addNode(int item)
+        {
+            link newNode = new Node(item);
+
+            if (head == nullptr)
+            {
+                head = newNode;
+                tail = newNode;
+                newNode->next = head;
+            }
+            else if (item <= head->item)
+            {
+                newNode->next = head;
+                head = newNode;
+                tail->next = head;
+            }
+            else if (item >= tail->item)
+            {
+                tail->next = newNode;
+                tail = newNode;
+                tail->next = head;
+            }
+            else
+            {
+                link current = head;
+                while (current->next != head && current->next->item < item)
+                {
+                    current = current->next;
+                }
+                newNode->next = current->next;
+                current->next = newNode;
+            }
+        }
+
+        void delNodes(int item)
+        {
+            if (head == nullptr) return;
+
+            bool deleted;
+            do {
+                deleted = false;
+
+                if (head->item == item)
+                {
+                    if (head == tail)
+                    {
+                        delete head;
+                        head = nullptr;
+                        tail = nullptr;
+                        return;
+                    }
+                    else
+                    {
+                        link temp = head;
+                        head = head->next;
+                        tail->next = head;
+                        delete temp;
+                        deleted = true;
+                        continue;
+                    }
+                }
+
+                link current = head;
+                link previous = nullptr;
+
+                do {
+                    previous = current;
+                    current = current->next;
+
+                    if (current->item == item)
+                    {
+                        if (current == tail)
+                        {
+                            tail = previous;
+                            tail->next = head;
+                        }
+                        else
+                        {
+                            previous->next = current->next;
+                        }
+                        delete current;
+                        deleted = true;
+                        break;
+                    }
+                } while (current != head);
+
+            } while (deleted);
+        }
+
+        void delPrevNodes(int item)
+        {
+            if (head == nullptr || head == tail) return;
+
+            std::vector<link> nodesToDelete;
+
+            link current = head;
+            do {
+                link nextNode = current->next;
+                if (nextNode->item == item) {
+                    if (current != nextNode) {
+                        nodesToDelete.push_back(current);
+                    }
+                }
+                current = current->next;
+            } while (current != head);
+
+            for (link nodeToDelete : nodesToDelete) {
+                if (head == nullptr || head == tail) break;
+
+                if (nodeToDelete == head) {
+                    head = head->next;
+                    tail->next = head;
+                    delete nodeToDelete;
+                }
+                else {
+                    link prev = head;
+                    while (prev->next != nodeToDelete && prev->next != head) {
+                        prev = prev->next;
+                    }
+
+                    if (prev->next == nodeToDelete) {
+                        prev->next = nodeToDelete->next;
+                        if (nodeToDelete == tail) {
+                            tail = prev;
+                        }
+                        delete nodeToDelete;
+                    }
+                }
+            }
+        }
+
+        std::vector<link> searchNodes(int item)
+        {
+            std::vector<link> result;
+            if (head != nullptr)
+            {
+                link current = head;
+                do {
+                    if (current->item == item)
+                    {
+                        result.push_back(current);
+                    }
+                    current = current->next;
+                } while (current != head);
+            }
+            return result;
+        }
+
+        bool contains(int item) const
+        {
+            if (head == nullptr) return false;
+
+            link current = head;
+            do {
+                if (current->item == item) return true;
+                current = current->next;
+            } while (current != head);
+
+            return false;
+        }
+
+        friend std::ostream& operator<<(std::ostream& stream, List& list)
+        {
+            if (list.head == nullptr)
+                stream << "list is empty";
+            else {
+                link current = list.head;
+                stream << current->item;
+                current = current->next;
+                while (current != list.head)
+                {
+                    stream << " -> " << current->item;
+                    current = current->next;
+                }
+                stream << " -> (head)";
+            }
+            return stream;
+        }
+
+        List operator-(const List& other) const
+        {
+            List result;
+
+            if (head != nullptr)
+            {
+                link current = head;
+                do {
+                    if (!other.contains(current->item) && !result.contains(current->item))
+                    {
+                        result.addNode(current->item);
+                    }
+                    current = current->next;
+                } while (current != head);
+            }
+
+            return result;
+        }
+
+        bool isEmpty() const { return head == nullptr; }
+    };
+
+    int main()
+    {
+        List listA, listB;
+        setlocale(LC_ALL, "rus");
+        std::cout << "=== Тестирование операций со списком ===" << std::endl;
+
+        std::cout << "\n1. Добавление элементов в список A: ";
+        listA.addNode(3);
+        listA.addNode(1);
+        listA.addNode(4);
+        listA.addNode(2);
+        std::cout << listA << std::endl;
+
+        std::cout << "Добавление элементов в список B: ";
+        listB.addNode(2);
+        listB.addNode(5);
+        listB.addNode(3);
+        std::cout << listB << std::endl;
+
+        std::cout << "\n2. Поиск элемента 2 в списке A: ";
+        auto found = listA.searchNodes(2);
+        if (!found.empty()) {
+            std::cout << "Найдено " << found.size() << " элементов" << std::endl;
+        }
+        else {
+            std::cout << "Не найдено" << std::endl;
+        }
+
+        std::cout << "\n3. Удаление всех элементов 2 из списка A: ";
+        listA.delNodes(2);
+        std::cout << listA << std::endl;
+
+        std::cout << "\n4. Удаление перед элементом 4 в списке A: ";
+        listA.delPrevNodes(4);
+        std::cout << listA << std::endl;
+
+        std::cout << "\n5. Разность списков A - B: ";
+        List diff = listA - listB;
+        std::cout << diff << std::endl;
+
+        std::cout << "\n6. Восстанавливаем список A: ";
+        listA.clear();
+        listA.addNode(1);
+        listA.addNode(2);
+        listA.addNode(3);
+        listA.addNode(4);
+        std::cout << listA << std::endl;
+
+        return 0;
+    }
