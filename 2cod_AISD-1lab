@@ -1,0 +1,440 @@
+#include <iostream>
+#include <vector>
+
+class Node
+{
+public:
+	int item;
+	Node* next;
+	Node(int item)
+	{
+		this->item = item;
+		this->next = nullptr;
+	}
+};
+
+class List
+{
+	typedef Node* link;
+
+	link head;
+	link tail;
+
+public:
+	List()
+	{
+		head = nullptr;
+		tail = nullptr;
+	}
+
+	~List()
+	{
+		if (head != nullptr)
+		{
+			link b = head;
+			while (b != tail) {
+				b = b->next;
+				delete(head);
+				head = b;
+			}
+			delete(head);
+		}
+	}
+
+	link getHead()
+	{
+		return head;
+	}
+
+	link getTail()
+	{
+		return tail;
+	}
+
+	void addNode(int item)
+	{
+		link newNode = new Node(item);
+
+		if (head == nullptr)
+		{
+			head = newNode;
+			tail = newNode;
+			newNode->next = head;
+		}
+		else
+		{
+			if (head->next == head)
+			{
+				if (item < head->item)
+				{
+					newNode->next = head;
+					head->next = newNode;
+					tail = head;
+					head = newNode;
+					tail->next = head;
+				}
+				else
+				{
+					tail = newNode;
+					head->next = tail;
+					tail->next = head;
+				}
+			}
+			else
+			{
+				if (item < head->item)
+				{
+					newNode->next = head;
+					head = newNode;
+					tail->next = head;
+				}
+				else if (item > tail->item)
+				{
+					tail->next = newNode;
+					tail = newNode;
+					tail->next = head;
+				}
+				else
+				{
+					link b = head;
+					while (b->next->item < item)
+					{
+						b = b->next;
+					}
+					newNode->next = b->next;
+					b->next = newNode;
+				}
+			}
+		}
+	}
+
+	void insertNode(link newNode)
+	{
+		if (head == nullptr)
+		{
+			head = newNode;
+			tail = newNode;
+			newNode->next = head;
+		}
+		else
+		{
+			if (head->next == head)
+			{
+				if (newNode->item < head->item)
+				{
+					newNode->next = head;
+					head->next = newNode;
+					tail = head;
+					head = newNode;
+					tail->next = head;
+				}
+				else
+				{
+					tail = newNode;
+					head->next = tail;
+					tail->next = head;
+				}
+			}
+			else {
+				if (newNode->item < head->item)
+				{
+					newNode->next = head;
+					head = newNode;
+					tail->next = head;
+				}
+				else if (newNode->item > tail->item)
+				{
+					tail->next = newNode;
+					tail = newNode;
+					tail->next = head;
+				}
+				else
+				{
+					link b = head;
+					while (b->next->item < newNode->item)
+					{
+						b = b->next;
+					}
+					newNode->next = b->next;
+					b->next = newNode;
+				}
+			}
+		}
+	}
+
+	void delNodes(int item)
+	{
+		if (head != nullptr)
+		{
+			link current = head;
+			link previous = tail;
+
+			do {
+				if (current->item == item)
+				{
+					previous->next = current->next;
+					if (current == tail)
+						tail = previous;
+					if (current == head)
+						head = previous->next;
+					delete(current);
+					current = previous->next;
+				}
+				else {
+					previous = current;
+					current = current->next;
+				}
+			} while (current != tail);
+
+			if (current->item == item)
+			{
+				previous->next = current->next;
+				if (current == tail)
+					tail = previous;
+				if (current == head)
+					head = previous->next;
+				delete(current);
+				current = previous->next;
+			}
+
+			if (head == tail and head->item == item)
+			{
+				delete(head);
+				head = nullptr;
+			}
+		}
+	}
+
+	void delPrevNodes(int item)
+	{
+		bool smthDeleted = false;
+		if (head != nullptr)
+		{
+			link current = head;
+			link previous = tail;
+
+			do {
+				if (current->next->item == item and current != previous)
+				{
+					smthDeleted = true;
+					previous->next = current->next;
+					if (current == tail)
+						tail = previous;
+					if (current == head)
+						head = previous->next;
+					delete(current);
+					current = previous->next;
+				}
+				else {
+					previous = current;
+					current = current->next;
+				}
+			} while (current != tail);
+			if (current->next->item == item and current != previous and !smthDeleted)
+			{
+				previous->next = current->next;
+				if (current == tail)
+					tail = previous;
+				if (current == head)
+					head = previous->next;
+				delete(current);
+				current = previous->next;
+			}
+		}
+	}
+
+	void searchNodes(int item, std::ostream& stream)
+	{
+		stream << "Nodes with item: " << item << std::endl;
+		if (head != nullptr)
+		{
+			link current = head;
+			do {
+				if (current->item == item)
+				{
+					stream << current << std::endl;
+				}
+				current = current->next;
+			} while (current != head);
+		}
+	}
+
+	std::vector<link> searchNodes(int item)
+	{
+		std::vector<link> result;
+		if (head != nullptr)
+		{
+			link current = head;
+			do {
+				if (current->item == item)
+				{
+					result.push_back(current);
+				}
+				current = current->next;
+			} while (current != head);
+		}
+		return result;
+	}
+
+	int countNodes(int item)
+	{
+		if (head == nullptr)
+			return 0;
+		link current = head;
+		int count = 0;
+		do {
+			if (current->item == item)
+			{
+				count++;
+			}
+			current = current->next;
+		} while (current != head);
+		return count;
+	}
+
+	friend std::ostream& operator << (std::ostream& stream, List& list)
+	{
+		if (list.head == nullptr)
+			stream << "list is empty";
+		else {
+			link current = list.head;
+			stream << current->item << "->(" << current->next << ')';
+			while (current != list.tail)
+			{
+				current = current->next;
+				stream << "; " << current->item << "->(" << current->next << ')';
+			}
+			stream << "\nhead: " << list.head->item << '(' << list.head << ')';
+			stream << "\ntail: " << list.tail->item << '(' << list.tail << ')';
+		}
+		return stream;
+	}
+
+	List operator - (const List& anList) const
+	{
+		List result;
+		link current = head;
+		if (head != nullptr) {
+			do {
+				link otherCurrent = anList.head;
+				bool inOther = false;
+				if (anList.head != nullptr) {
+					do {
+						if (otherCurrent->item == current->item) {
+							inOther = true;
+							break;
+						}
+						otherCurrent = otherCurrent->next;
+					} while (otherCurrent != anList.head);
+				}
+
+				if (!inOther) {
+					link resultCurrent = result.head;
+					bool inResult = false;
+					if (result.head != nullptr) {
+						do {
+							if (resultCurrent->item == current->item) {
+								inResult = true;
+								break;
+							}
+							resultCurrent = resultCurrent->next;
+						} while (resultCurrent != result.head);
+					}
+
+					if (!inResult) {
+						result.addNode(current->item);
+					}
+				}
+				current = current->next;
+			} while (current != head);
+		}
+		return result;
+	}
+
+	void unionLists(List* listB)
+	{
+		if (listB->head != nullptr)
+		{
+			link current = listB->head;
+			link previous = listB->tail;
+
+			do {
+				previous->next = current->next;
+				if (current == listB->tail)
+					listB->tail = previous;
+				if (current == listB->head)
+					listB->head = previous->next;
+				insertNode(current);
+				current = previous->next;
+			} while (current != listB->tail);
+
+
+			insertNode(listB->head);
+			listB->head = nullptr;
+		}
+	}
+};
+
+std::ostream& operator << (std::ostream& stream, std::vector<Node*>& vec)
+{
+	if (vec.empty())
+		stream << "vector is empty";
+	else {
+		stream << vec[0];
+		for (int i = 1; i < vec.size(); i++)
+		{
+			stream << ", " << vec[i];
+		}
+	}
+	return stream;
+}
+
+int main()
+{
+	setlocale(LC_ALL, "rus");
+	std::cout << "1. Тест упорядоченного добавления по возрастанию:" << std::endl;
+	List listA;
+	listA.addNode(3);
+	listA.addNode(1);
+	listA.addNode(4);
+	listA.addNode(2);
+	listA.addNode(2);
+	std::cout << "Список A после добавления 3, 1, 4, 2, 2:" << std::endl;
+	std::cout << listA << std::endl;
+	std::cout << "\n2. Тест поиска элементов:" << std::endl;
+	auto found = listA.searchNodes(2);
+	std::cout << "Поиск элемента 2: найдено " << found.size() << " элементов" << std::endl;
+	std::cout << "\n3. Тест удаления всех вхождений элемента 2:" << std::endl;
+	listA.delNodes(2);
+	std::cout << "Список A после удаления всех двоек:" << std::endl;
+	std::cout << listA << std::endl;
+
+	std::cout << "\n4. Создание списка B:" << std::endl;
+	List listB;
+	listB.addNode(5);
+	listB.addNode(3);
+	listB.addNode(1);
+	listB.addNode(6);
+	std::cout << "Список B (5, 3, 1, 6):" << std::endl;
+	std::cout << listB << std::endl;
+	std::cout << "\n5. Тест разности списков A - B:" << std::endl;
+	List diff = listA - listB;
+	std::cout << "Разность A - B (элементы из A, которых нет в B):" << std::endl;
+	std::cout << diff << std::endl;
+	std::cout << "\n6. Тест удаления перед каждым вхождением:" << std::endl;
+
+	List listC;
+	listC.addNode(1);
+	listC.addNode(2);
+	listC.addNode(3);
+	listC.addNode(2);
+	listC.addNode(4);
+	listC.addNode(2);
+	std::cout << "Список C (1, 2, 3, 2, 4, 2):" << std::endl;
+	std::cout << listC << std::endl;
+
+	listC.delPrevNodes(2);
+	std::cout << "Список C после удаления перед каждым вхождением 2:" << std::endl;
+	std::cout << listC << std::endl;
+	return 0;
+}
